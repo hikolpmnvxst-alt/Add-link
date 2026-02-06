@@ -20,9 +20,10 @@
             padding: 40px 20px;
             color: white;
             overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        /* ستایلی شاشەی پاسۆرد */
+        /* شاشەی پاسۆرد */
         #lock-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -34,11 +35,9 @@
             justify-content: center;
         }
 
-        .passcode-header { margin-bottom: 20px; font-size: 18px; }
+        .passcode-header { margin-bottom: 20px; font-size: 18px; font-weight: bold; }
 
-        .dots-container {
-            display: flex; gap: 15px; margin-bottom: 40px;
-        }
+        .dots-container { display: flex; gap: 15px; margin-bottom: 40px; }
 
         .dot {
             width: 15px; height: 15px; border: 2px solid white;
@@ -56,21 +55,21 @@
             width: 70px; height: 70px; border: 2px solid white;
             border-radius: 50%; display: flex; align-items: center;
             justify-content: center; font-size: 24px; font-weight: bold;
-            cursor: pointer; transition: 0.2s;
+            cursor: pointer; transition: 0.2s; user-select: none;
         }
 
         .key:active { background-color: rgba(255, 255, 255, 0.3); }
 
-        /* ستایلی لینکەکان (هەمان ستایلی خۆت) */
+        /* بەشی لینکەکان */
         .links-container {
-            display: none; /* تا پاسۆرد لێنەدرێت دەرناکەوێت */
+            display: none;
             width: 100%; max-width: 600px;
             flex-direction: column; gap: 16px;
+            margin-top: 20px;
         }
 
         .link-wrapper {
-            position: relative; display: flex;
-            align-items: center; width: 100%;
+            display: flex; align-items: center; width: 100%;
         }
 
         .link-item {
@@ -86,19 +85,21 @@
             background: #ffffff; color: #cf2020; border: none;
             width: 35px; height: 35px; border-radius: 50%;
             margin-left: 10px; cursor: pointer; font-weight: bold;
+            flex-shrink: 0;
         }
 
         .add-circular-btn {
             position: fixed; bottom: 30px; right: 30px;
             width: 60px; height: 60px; background-color: white;
             color: var(--bg-color); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
+            display: none; justify-content: center; align-items: center;
             font-size: 35px; border: none; cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 100;
         }
 
         .modal {
-            display: none; position: fixed; z-index: 1001;
+            display: none; position: fixed; z-index: 10000;
             left: 0; top: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.7);
             justify-content: center; align-items: center;
@@ -112,13 +113,13 @@
 
         .modal-content input {
             width: 90%; padding: 12px; margin: 10px 0;
-            border: 1px solid #ddd; border-radius: 10px;
+            border: 1px solid #ddd; border-radius: 10px; font-family: inherit;
         }
 
         .save-btn {
             background-color: var(--bg-color); color: white;
             border: none; padding: 12px 30px; border-radius: 10px;
-            cursor: pointer; font-weight: bold;
+            cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;
         }
     </style>
 </head>
@@ -133,24 +134,24 @@
             <div class="dot" id="dot4"></div>
         </div>
         <div class="keypad">
-            <div class="key" onclick="pressKey('3')">3</div>
-            <div class="key" onclick="pressKey('2')">2</div>
             <div class="key" onclick="pressKey('1')">1</div>
-            <div class="key" onclick="pressKey('6')">6</div>
-            <div class="key" onclick="pressKey('5')">5</div>
+            <div class="key" onclick="pressKey('2')">2</div>
+            <div class="key" onclick="pressKey('3')">3</div>
             <div class="key" onclick="pressKey('4')">4</div>
-            <div class="key" onclick="pressKey('9')">9</div>
-            <div class="key" onclick="pressKey('8')">8</div>
+            <div class="key" onclick="pressKey('5')">5</div>
+            <div class="key" onclick="pressKey('6')">6</div>
             <div class="key" onclick="pressKey('7')">7</div>
+            <div class="key" onclick="pressKey('8')">8</div>
+            <div class="key" onclick="pressKey('9')">9</div>
             <div></div>
             <div class="key" onclick="pressKey('0')">0</div>
-            <div class="key" style="border:none; font-size: 14px;" onclick="resetPass()">پاککردنەوە</div>
+            <div class="key" style="border:none; font-size: 14px;" onclick="resetPass()">C</div>
         </div>
     </div>
 
     <div class="links-container" id="container"></div>
 
-    <button id="add-btn" class="add-circular-btn" style="display:none;" onclick="openModal()">+</button>
+    <button id="add-btn" class="add-circular-btn" onclick="openModal()">+</button>
 
     <div id="myModal" class="modal">
         <div class="modal-content">
@@ -158,7 +159,7 @@
             <input type="text" id="linkTitle" placeholder="ناوی چوارگۆشەکە">
             <input type="text" id="linkUrl" placeholder="لینکەکە لێرە دابنێ">
             <button class="save-btn" onclick="saveNewLink()">پاشەکەوت بکە</button>
-            <p onclick="closeModal()" style="cursor:pointer; color: grey;">پەشیمان بوومەوە</p>
+            <p onclick="closeModal()" style="cursor:pointer; color: grey; margin-top: 15px;">داخستن</p>
         </div>
     </div>
 
@@ -170,13 +171,12 @@
             if (currentPass.length < 4) {
                 currentPass += num;
                 updateDots();
-                
                 if (currentPass.length === 4) {
                     setTimeout(() => {
                         if (currentPass === correctPass) {
                             unlockApp();
                         } else {
-                            alert("پاسۆردەکە هەڵەیە! ❌");
+                            alert("پاسۆرد هەڵەیە! ❌");
                             resetPass();
                         }
                     }, 200);
@@ -186,7 +186,7 @@
 
         function updateDots() {
             for (let i = 1; i <= 4; i++) {
-                document.getElementById('dot' + i).className = i <= currentPass.length ? 'dot active' : 'dot';
+                document.getElementById('dot' + i).classList.toggle('active', i <= currentPass.length);
             }
         }
 
@@ -202,19 +202,21 @@
             loadLinks();
         }
 
-        // بەشەکانی تری کۆدەکە (هەمان سیستەمی خۆت)
-        const modal = document.getElementById("myModal");
-        function openModal() { modal.style.display = "flex"; }
-        function closeModal() { modal.style.display = "none"; }
+        function openModal() { document.getElementById("myModal").style.display = "flex"; }
+        function closeModal() { document.getElementById("myModal").style.display = "none"; }
 
         function saveNewLink() {
             const title = document.getElementById('linkTitle').value;
             const url = document.getElementById('linkUrl').value;
             if (title && url) {
-                const newLink = { id: Date.now(), title, url };
-                saveToDB(newLink);
+                const newLink = { id: Date.now(), title: title, url: url };
+                let links = JSON.parse(localStorage.getItem('linktree_v3') || '[]');
+                links.push(newLink);
+                localStorage.setItem('linktree_v3', JSON.stringify(links));
                 renderLink(newLink);
                 closeModal();
+                document.getElementById('linkTitle').value = '';
+                document.getElementById('linkUrl').value = '';
             }
         }
 
@@ -227,7 +229,14 @@
             const delBtn = document.createElement('button');
             delBtn.className = 'delete-trigger';
             delBtn.innerText = 'X';
-            delBtn.onclick = () => deleteWithConfirmation(data.id, data.title);
+            delBtn.onclick = () => {
+                if(confirm("١/٣ - دڵنیایت لە سڕینەوە؟") && confirm("٢/٣ - دڵنیابەرەوە کردارەکە ناگەڕێتەوە!") && confirm("٣/٣ - کۆتا هەنگاو: بسڕێتەوە؟")) {
+                    let links = JSON.parse(localStorage.getItem('linktree_v3') || '[]');
+                    links = links.filter(l => l.id !== data.id);
+                    localStorage.setItem('linktree_v3', JSON.stringify(links));
+                    wrapper.remove();
+                }
+            };
 
             const a = document.createElement('a');
             a.href = data.url.startsWith('http') ? data.url : 'https://' + data.url;
@@ -240,32 +249,14 @@
             container.appendChild(wrapper);
         }
 
-        function deleteWithConfirmation(id, title) {
-            if (confirm(`١/٣ - سڕینەوەی ${title}؟`) && confirm(`٢/٣ - دڵنیایت؟`) && confirm(`٣/٣ - کۆتا بڕیار؟`)) {
-                deleteFromDB(id);
-                document.getElementById('wrap-' + id).remove();
-            }
-        }
-
-        function saveToDB(data) {
-            let links = localStorage.getItem('linktree_v2') ? JSON.parse(localStorage.getItem('linktree_v2')) : [];
-            links.push(data);
-            localStorage.setItem('linktree_v2', JSON.stringify(links));
-        }
-
-        function deleteFromDB(id) {
-            let links = JSON.parse(localStorage.getItem('linktree_v2'));
-            links = links.filter(link => link.id !== id);
-            localStorage.setItem('linktree_v2', JSON.stringify(links));
-        }
-
         function loadLinks() {
-            document.getElementById('container').innerHTML = '';
-            let links = localStorage.getItem('linktree_v2') ? JSON.parse(localStorage.getItem('linktree_v2')) : [];
-            links.forEach(link => renderLink(link));
+            const container = document.getElementById('container');
+            container.innerHTML = '';
+            let links = JSON.parse(localStorage.getItem('linktree_v3') || '[]');
+            links.forEach(renderLink);
         }
 
-        window.onclick = (e) => { if (e.target == modal) closeModal(); }
+        window.onclick = (e) => { if (e.target.className === 'modal') closeModal(); }
     </script>
 </body>
 </html>
